@@ -257,4 +257,97 @@ DATA STRUCTURES C++;
         Vector, list, array, map, set, queue
 
     Vector: dynamic array
-        
+    Operations: push_back,pop_back,size,at,operator[];
+
+    #include <vector>
+    std::vector<int> numbers = {1, 2, 3};
+    numbers.push_back(4); // Adds 4
+
+    Fixed-Size Array:
+    Fixed-size sequences with fast access and no dymanic resizing
+    size,at,operator[]
+
+    #include <array>
+    std::array<int, 3> numbers = {1, 2, 3};
+
+
+    Doubly Linked List:
+    std::list is a doubly linked list, where each element points to the nest and previous elements.
+    Frequent insertions/deletions in the middle, where random access is less important.
+    Operations: push_front, push_back, pop_front, pop_back, insert, erase;
+
+    #include <list>
+    std::list<int> numbers = {1, 2, 3};
+    numbers.push_front(0); // Adds 0 at the start
+
+    std::map and std::unsorted_map (Associative Containers)
+    std::map is sorted key-value store (implemented as a red-black tree), and std::unsorted_map is unsorted key-value store (hash table).
+
+    Use Case:
+
+    std::map: Sorted key-value pairs with O(log n) access.
+    std::unordered_map: Unsorted key-value pairs with average O(1) access.
+
+    Operations: insert, find, erase, operator[].
+
+    #include <map>
+    std::map<std::string, int> ages = {{"Stergios", 23}, {"Hrisi", 23}};
+    ages["New"] = 30; // Adds or updates
+    
+
+    std::set and std::unordered_set
+    std::set stores unique, sorted elements, and std::unordered_set stores uniqie, unsorted elements.
+
+    Headers: <set>, <unordered_set>
+    Use Case:
+        std::set: Sorted, unique elements with O(log n) operations.
+        std::unordered_set: Unsorted, unique elements with average O(1) operations.
+    Operations: insert, erase, find.
+
+    #include <set>
+    std::set<int> unique_numbers = {1, 2, 2, 3}; // Stores {1, 2, 3}
+
+
+
+    std::queue and std::priority_queue
+    std::queue is a FIFO container, and std::priority_queue is a heap-based container where the "highiest" element is always first.
+
+    Headers: <queue>
+    Use Case:
+
+        std::queue: FIFO processing (e.g., task queues).
+        std::priority_queue: Priority-based processing (e.g., highest/lowest value first).
+
+    Operations: push, pop, front (queue), top (priority_queue).
+
+    #include <queue>
+    std::queue<int> q;
+    q.push(1); q.push(2); // Front is 1
+
+    What are Virtual Methods ?
+        Virtual methods in C++ enable dynamic polymorphism, allowing a derived class to override a base class's method, so the appropriate method is called based on the object's actual type at runtime, not the pointer or referance type.
+
+        #include <iostream>
+class Person {
+    public:
+        virtual void introduce() {
+            std::cout << "I am a Person" << std::endl;
+        }
+    };
+    class Student : public Person {
+    public:
+        void introduce() override {
+            std::cout << "I am a Student" << std::endl;
+        }
+    };
+    int main() {
+        Person* p = new Student();
+        p->introduce(); // What gets printed?
+        delete p;
+        return 0;
+}
+
+
+Ok so what I understand is that its good to use virtual methods BUT if I want to make a virtual method that I want to be a must to override the method has to be PURE virtual
+
+virtual void speak()=0;
