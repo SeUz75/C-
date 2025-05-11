@@ -1,0 +1,260 @@
+So i'm going to learn from different sources and AI's trying to set the up as a tutor so they dont just give me the answers and have this fake
+illusion of learning. Firstly I'm going to be using the GeeksForGeeks website Tutorial section. Lets go : 
+
+    Also in my notes im going to be writing all of my thought, learn process, things that were troubling me.
+
+        C++ is a popular programming language, it's used to create computer programs and one of the most used language in game dev. C++ is an extension of C and both languages have almost the same syntax.
+
+        C++ is a cross-platform language - PAUSE whats a cross platform language ? You write code and you can run it in multiple OS, windows, MacOS, Linux. And for this cause we need a COMPILER, compiler transforms your C++ to machine code, we have some compilers which are g++, clang++. We have different kind of compilers because every one have their strengths. 
+
+        g++: Very  mature, widely used, default on most Linux Systems.
+
+        clang++: Faster error messages, cleaner diagnostics, used in XCode, supports static analysis, often preferred for development. 
+
+        Ok now we know what compilers are being used and why we have different kind of compilers and whats a cross-platform language.
+
+
+
+
+    C++ gives a high level of control over system resources and memory.
+
+    I'm skipping Syntax because I remember most of it.
+
+    Lets go to Data types
+
+
+            Primitive types :
+                boolean 1 byte = 8 bits
+                char 1 byte
+                int 2 or 4 bytes = 16bits or 32bits
+                float 4 bytes
+                double 8 bytes = 64 bits
+
+    Ok I know where and why we are using the primitive types. Also I'm skipping the Operatos.
+
+    Let's go to strings.
+
+        String is a variable which contains a collection of characters surrounded by double quotes.
+
+
+    Ok I've written some code to remember back the special character and some basic functions for the strings. I am now at Break/ Continue section.
+
+
+    C++ ARRAYS 
+    To get the size of an Array you use this func
+        sizeof(array);
+        BUT IT RETURNS THE SIZE IN BYTES !
+
+        To get the excact number of elements in an array:
+        To find out how many elements an array has, you have to divide the size of the array by the size of the first element in the array:
+        
+
+
+    int myNumbers[5] = {10, 20, 30, 40, 50};
+    int getArrayLength = sizeof(myNumbers) / sizeof(myNumbers[0]);
+    cout << getArrayLength;
+
+
+    MultiDimentional arrays !! 
+
+    Struct : 
+        Is a way to grouping several related variables into one place. Each variable in the struct is called a member of the structure.
+        Unlike an array, a structure contains many different data types.
+
+
+    Pointers : 
+        What are pointers : 
+                A pointer is a variable which stores a memory address. And they allow you to 
+                    Access and manipilate data indirectly
+                    Manage memory dynamically using new delete
+                    Share data acros functions without copying.
+
+
+    1. Dynamic memory allocation:
+        Use pointers when you need to allocate memory at RUNTUME, when the size is unknown at compile time.
+        Example: allocating an array of person structs where the size comes from user input.
+
+        int size;
+        cin >> size;
+        person* people = new person[size];
+
+    2. Avoiding Copies:
+        Pass a pointer to a struct to a function to avoid copying the entire struct, which saves memory and improves perfomance for large structs.
+        Example:
+            void printPerson(person* p){
+                cout << p->name << endl;
+            }
+
+        printPerson(&person1);
+
+
+    3. Sharing Data:
+            Use a pointer when multiple parts of your program need to access or modify the same struct instance.
+            Example:
+                void updateAge(person* p, int age){
+                    p->age = newAge;
+                }
+                updateAge(&person1,16);
+
+
+
+
+    4. Dynamic Data structures
+        pointers are essential for structures like linked lists, trees, or graphs, where structs point to other structures.
+        Example: 
+            struct person{
+                int age;
+                string name;
+                person* friend;
+            }
+
+    5. Manual Memory Management:
+        Use pointers when you need control over when memory is allocated and deallocated
+
+
+    WHEN NOT TO USE POINTERS:
+        If a regular variable suffices: For a single struct with a short lifetime, use a stack variable (person person1;) to avoid manual memory management.
+
+        If size is known: Use arrays (person person[2];) or std::vector<person> for collections instead of manually managing new/delete;
+
+        If safety is concern: pointers can lead to errors (dangling pointers, memory leaks). Modern C++ prefer smart pointers (std::unique_ptr, std::shared_ptr) or containers like std::vector
+
+
+
+
+
+Lets clarify the word STATIC what it does in C++.....
+
+    static has different meaning depending on the context which is used,
+    whether applied to variables, functions, classes, or structs.
+
+    1. Static variables
+         Variables in C++ can be declared static in different contexts, and the effect depends on where they are defined.
+
+        a) Static Global Variables (Outside functions)
+        Internal linkage, it's only accessible within the same translation unit, the cpp file where it's defined. 
+        The variable has a static storage duration, meaning it exists for the entire program's lifetime.
+
+        With out static    
+        A global variable has external linkage by default, meaning it can be accessed from other files if declared.
+
+        b) Static Local Variables (inside functions)
+        The variable has static storage duration, meaning it's created the first time the function is called and persists for the program's lifetime. It remains value between function calls.
+        The variable has block scope, meaning it's only accessible within the function or block where it's defined.
+
+        Without static
+        A local variable has automatic storage duration, meaning it's created each time the function is called and destroyed when the function exits.
+
+        c) Static Member Variables (in Classes/Structs)
+        The variable is shared across all instances of the class or struct. There's only one copy of the variable, regardless of how many objects are created.
+        It has class scope, meaning it's accessed using the class/struct name (person::count()) rather than an instance.
+        Must be defined outside the class/struct
+
+        Without static
+        A non-static member variable is unique to each instance of the class/struct.
+    
+    2. Static Global Functions(outside class/structs)
+    Internal linkage, accessible only by this .cpp file.
+
+
+    Static Member Functions(In classes/structs)
+        The function is associated with the class/struct itself, not with any instance. It can be called without creating an object (using ClassName::function())
+        The function can use/access only static member variables or other static member functions, not instance specific members unless passed an instance.
+
+    3. Static Classes
+        In C++ the static keyword cannot be applied directly to an entire class definition, static class MyClass. However, static can be used within a class for member variable or member function, as described above.
+
+
+
+
+Smart pointersin C++ are a feature introduced to manage dynamic memory dynamically, reducing the risk of memory leaks and dangling pointers compared to raw pointers. Smart pointers are a part of the C++ standart Library, #include <memory> and include types like std::unique_ptr, std::shared_ptr and std::weak_ptr they all use RAI (resource Acquisition is initialization) to ensure memory is freed when the pointer goes out of scope.
+
+
+Main types of smart pointers:
+    std::unique_ptr, std::shared_ptr
+
+    #include<memory>
+    std::unique_ptr<int> ptr = std::make_unique<int>(42);
+
+Key idea: std::unique_ptr ensures a single pointer owns a resource, and when the pointer goes out of scope, the resource is automatically deleted. It's not-copyable but it can be moved using std::move;
+
+Shared pointers:
+    std::shared_ptr<int> ptr1 = std::make_shared<int>(42);
+    std::shared_ptr<int> ptr2 = ptr1;
+
+Key idea: Allows miltiple pointers to share ownership of a resource, using a reference count to track how many pointers exist. When the count reaches zero, the resource is deleted.
+
+
+
+Multithreading ic C++
+
+Multithreading allows a program to run multiple tasks concurrently, leveraging multiple CPU cores or improving responsiveness. 
+
+C++ provides threading support in the <thread> header, with classes like std::thread, and synchronization tools in <mutex>,<atomic>, and others.
+
+
+Key tools:
+    std::mutex Locks a resource to prevent concurrent access.
+    std::lock_guard RAII-style lock for mutex
+    std::atomic for thread-safe operations on simple types.
+    std::condition_variable for thread coordination
+
+    mtx.lock() mtx.unlock()
+    Manually locks/unlocks a mutex to protect a critical section;
+
+    std::lock_guard:automatically manages mutex locking and unlocking using RAII
+
+        void increment() {
+        std::lock_guard<std::mutex> lock(mtx);
+        for (int i = 0; i < 100000; i++) {
+            ++counter;
+        }
+        }
+
+    std::atomic provides thread safe operations for simple data types witout using explicit locks
+
+    std::atomic<int> counter = 0;
+    void increment() {
+        for (int i = 0; i < 100000; i++) {
+            counter++;
+        }
+    }
+
+    Advantages: Faster than mutexes for simple operations because it avoids locking overhead. Ideal for counters, flags, or single-value updates.
+
+
+
+    std::condition_variable: coordinates threads by allowing one to wait for a condiotion set by another;
+
+    std::mutex mtx;
+    std::condition_variable cv;
+    bool result_ready = false;
+    int shared_result;
+    void parse(std::string input) {
+        shared_result = std::stoi(input);
+        std::lock_guard<std::mutex> lock(mtx);
+        result_ready = true;
+        cv.notify_one();
+    }
+    void print() {
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait(lock, [] { return result_ready; });
+        std::cout << "Result: " << shared_result << std::endl;
+    }
+
+Why lock and unlock ?
+    mtx.lock() -> Thread waits until it can get exclusive access;
+    Critical section runs -> Shared data is safely modified
+    mtx.unlock();
+
+
+
+DATA STRUCTURES C++;
+    Data structures organize and store data efficiently to support specific operation.
+    Insertion, deletion, searching. In C++, the standart library provides robust implementations, but you can also create custom ones.
+
+    STL:
+        Vector, list, array, map, set, queue
+
+    Vector: dynamic array
+        
