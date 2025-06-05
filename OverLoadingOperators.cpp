@@ -1,5 +1,24 @@
 #include <iostream>
+#include <vector>
 
+
+
+class Vector3 {
+    public : 
+        int x;
+        int y;
+        int z;
+
+        int operator [] (int const& num) { 
+            if(num == 0 ){
+                return x;
+            } else if ( num == 1){
+                return y;
+            } else if ( num == 2){
+                return z;
+            }
+        }
+};
 
 
 class Point { 
@@ -37,4 +56,12 @@ int main () {
     Point b(5,5);
     Point c = a +b;
     std::cout << c;
+
+
+    Vector3 v;
+    v.x = 10;
+    v.y = 20;
+    v.z = 30;
+
+    std::cout << v[1];
 }
