@@ -3,23 +3,6 @@
 
 
 
-class Vector3 {
-    public : 
-        int x;
-        int y;
-        int z;
-
-        int operator [] (int const& num) { 
-            if(num == 0 ){
-                return x;
-            } else if ( num == 1){
-                return y;
-            } else if ( num == 2){
-                return z;
-            }
-        }
-};
-
 
 class Point { 
 
@@ -48,6 +31,41 @@ std::ostream& operator<<(std::ostream &out, const Point &p) {
     return out;
 }
 
+class Vector3 {
+    public : 
+        int x;
+        int y;
+        int z;
+
+        Vector3 (int a, int b, int c) 
+        { 
+            x = a;
+            y = b;
+            z = c;
+        }
+
+        int operator [] (int const& num) 
+        { 
+            if(num == 0 ){
+                return x;
+            } else if ( num == 1){
+                return y;
+            } else if ( num == 2){
+                return z;
+            }
+            return 0;
+        }
+
+        Vector3 Multiply ( const Vector3& other) 
+        {   
+            return Vector3(x * other.x, y * other.y, z * other.z);
+        }
+
+        Vector3 operator * ( const Vector3& other) { 
+            return Multiply(other);
+        }
+};
+
 
 
 int main () { 
@@ -58,10 +76,12 @@ int main () {
     std::cout << c;
 
 
-    Vector3 v;
-    v.x = 10;
-    v.y = 20;
-    v.z = 30;
+    Vector3 v1(10,20,30);
+    Vector3 v2(30,40,50);
 
-    std::cout << v[1];
+    Vector3 v3 = v1 * v2;
+
+    std::cout << v1[1] << std::endl;
+    std::cout << v3.x << " " << v3.y << " " << v3.z << std::endl;
+
 }
