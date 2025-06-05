@@ -7,7 +7,7 @@ class Point {
     public :
         Point (int a, int b){
             x = a ;
-            b = y;
+            y = b;
         }
 
         int x;
@@ -19,16 +19,16 @@ class Point {
 
             return result;
         }
-
-        std::ostream & operator << ( Point& result);
-    
-    friend std::ostream & operator << ( std::ostream &out, const Point &c) { 
-        out << "("<<c.x  << ","  << c.y << ")";
-        out << std::endl;
-
-        return out;
-    }
+        // Now im ready that operator<< must be a non-member function 
+        friend std::ostream& operator<<(std::ostream &out, const Point &p);
 };
+
+// Define operator<< outside the class
+std::ostream& operator<<(std::ostream &out, const Point &p) {
+    out << "(" << p.x << ", " << p.y << ")";
+    return out;
+}
+
 
 
 int main () { 
