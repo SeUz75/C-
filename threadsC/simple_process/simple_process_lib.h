@@ -10,8 +10,6 @@ typedef struct simple_process simple_process_t;
 
 simple_process_t* create_simple_process();
 
-
-
 interface_t* simple_process_get_interface(simple_process_t* handle);
 
 #endif

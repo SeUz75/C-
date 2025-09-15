@@ -1,6 +1,4 @@
-add_library(dispatcher
-  dispatcher_lib.c
-)
+add_library(dispatcher SHARED dispatcher_lib.c)
 
 target_include_directories(dispatcher
   PUBLIC

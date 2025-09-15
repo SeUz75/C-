@@ -2,9 +2,7 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 
-#include "base_thread_lib.h"
-#include "data_structure.h"
-#include "simple_process_lib.h"
+#include "dispatcher_lib.h"
 
 void print_list(node_t* head){
     node_t* current = head->next;
@@ -30,36 +28,36 @@ int main() {
 
     // base_functions->destroy(thread);
 
-    void* simple_handle = dlopen("/home/seuz75/C/thread2/install/lib/libsimple_process.so", RTLD_LAZY);
+    void* dispatcher_handle = dlopen("/home/seuz75/C/thread2/install/lib/libdispatcher.so", RTLD_LAZY);
 
-    if (!simple_handle) {
+    if (!dispatcher_handle) {
         printf("Error loading library: %s\n", dlerror());
         return 1;
     }
 
      // Get function pointers
-    simple_process_t* (*create_simple)() = dlsym(simple_handle, "create_simple_process");
-    interface_t* (*get_interface)(simple_process_t*) = dlsym(simple_handle, "simple_process_get_interface");
+    dispatcher_t* (*create_dispatcher)() = dlsym(dispatcher_handle, "create_dispatcher");
+    interface_t* (*get_interface)() = dlsym(dispatcher_handle, "get_dispatcher_functions");
 
-    if (!create_simple || !get_interface) {
+    if (!create_dispatcher || !get_interface) {
         printf("Error getting symbols: %s\n", dlerror());
-        dlclose(simple_handle);
+        dlclose(dispatcher_handle);
         return 1;
     }
 
-    simple_process_t* simple_instance = create_simple();
-    if (!simple_instance) {
+    dispatcher_t* dispatcher_instance = create_dispatcher();
+    if (!dispatcher_instance) {
         printf("Failed to create simple process\n");
-        dlclose(simple_handle);
+        dlclose(dispatcher_handle);
         return 1;
     }
 
-    interface_t* simple_functions = get_interface(simple_instance);
+    interface_t* dispatcher_functions = get_interface();
 
-    simple_functions->send_msg(simple_instance, 15);
+    dispatcher_functions->send_msg(dispatcher_instance, 15);
+    dispatcher_functions->destroy(dispatcher_instance);
 
-    simple_functions->destroy(simple_instance);
-    dlclose(simple_handle);
+    dlclose(dispatcher_instance);
     
     
     return 0;
