@@ -38,26 +38,33 @@ int main() {
      // Get function pointers
     dispatcher_t* (*create_dispatcher)() = dlsym(dispatcher_handle, "create_dispatcher");
     interface_t* (*get_interface)() = dlsym(dispatcher_handle, "get_dispatcher_functions");
-
+    printf("get_dispatcher function done \n");
+    
     if (!create_dispatcher || !get_interface) {
         printf("Error getting symbols: %s\n", dlerror());
         dlclose(dispatcher_handle);
         return 1;
     }
-
+    
     dispatcher_t* dispatcher_instance = create_dispatcher();
     if (!dispatcher_instance) {
         printf("Failed to create simple process\n");
         dlclose(dispatcher_handle);
         return 1;
     }
-
-    interface_t* dispatcher_functions = get_interface();
-
+    
+    
+    interface_t* dispatcher_functions = get_interface(dispatcher_instance);
+    
+    dispatcher_functions->send_msg(dispatcher_instance, 5);
     dispatcher_functions->send_msg(dispatcher_instance, 15);
+    dispatcher_functions->send_msg(dispatcher_instance, 25);
+    dispatcher_functions->send_msg(dispatcher_instance, 35);
+    dispatcher_functions->send_msg(dispatcher_instance, 55);
+
     dispatcher_functions->destroy(dispatcher_instance);
 
-    dlclose(dispatcher_instance);
+    dlclose(dispatcher_handle);
     
     
     return 0;

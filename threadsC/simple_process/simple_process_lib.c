@@ -1,16 +1,12 @@
 #include <stdlib.h>
 #include "simple_process_lib.h"
 
-
-
 // simple_process_lib.c
 typedef struct simple_process {
-    
     base_thread_t* base;     // Pointer works with opaque types
     interface_t* vtable;      // Our own vtable
     size_t supported_n;
     uint32_t* supported[SIMPLE_MESSAGE_SIZE];
-
 };
 
 void simple_process(void* instance, uint32_t id);
@@ -26,7 +22,6 @@ interface_t SIMPLE_VTABLE = {
 
 // Override methods
 void simple_send_msg(void* instance, uint32_t id) {
-    printf("SIMPLE PROCESS: Custom send_msg for ID %u\n", id);
     simple_process_t* simple = (simple_process_t*)instance;
     
     // Delegate to base thread
@@ -58,17 +53,26 @@ simple_process_t* create_simple_process() {
 }
 
 void simple_process(void* instance, uint32_t id){
+    // Handle message ID 0 as BREAK signal
+    if (id == 0) {
+        printf("SIMPLE_PROCESS: Received BREAK signal (0), exiting...\n");
+        return;
+    }
+    
     if(id >= 10 && id <=20){
-        printf("SIMPLE_PROCESS message %u\n", id);
+        printf("SIMPLE_PROCESS : %u\n", id);
+    }
+    else if(id >= 50 && id <= 60){
+        printf("SIMPLE_PROCESS : %u\n", id);
     }
     else{
-        printf("Message cant be processed by SIMPLE PROCESS \n");
+        printf("Message %u cant be processed by SIMPLE PROCESS \n", id);
     }
 }
 
 void simple_get_support_messages(void* instance, uint32_t** msg, size_t* msg_size){
     simple_process_t* simple_instance = instance;
-    *msg = simple_instance->supported;  // ✅ Single dereference
+    *msg = simple_instance->supported;
     *msg_size = simple_instance->supported_n;
 }
 

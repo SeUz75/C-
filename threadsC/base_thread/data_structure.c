@@ -36,10 +36,10 @@ int dequeue(node_t** head){
         return -1;
     }
     
-    node_t* node_to_remove = (*head)->next;       // ✅ First data node
-    uint32_t retval = node_to_remove->id;         // ✅ Get its value
-    (*head)->next = node_to_remove->next;         // ✅ Skip over it
-    free(node_to_remove);                         // ✅ Free it
+    node_t* node_to_remove = (*head)->next;       
+    uint32_t retval = node_to_remove->id;       
+    (*head)->next = node_to_remove->next;      
+    free(node_to_remove);                         
     
     return retval;
 }

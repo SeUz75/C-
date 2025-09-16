@@ -1,17 +1,9 @@
-
 #include <dlfcn.h>
 #include <stdlib.h>
 
 #include "advanced_process_lib.h"
 #include "simple_process_lib.h"
 #include "dispatcher_lib.h"
-
-
-// void* (*init)(void* instance);  // Fixed: should take instance parameter
-// void (*get_supported_msg)(void* instance, uint32_t** msg, size_t* msg_size);
-// void (*send_msg)(void* instance, uint32_t msg);
-// void (*destroy)(void* instance);
-
 
 typedef struct dispatcher {
     simple_process_t* simple_instance;
@@ -26,19 +18,17 @@ typedef struct dispatcher {
     interface_t* dispatcher_functions;
 };
 
-
 void dispatcher_get_supported_message(void* instance, uint32_t** msgs, uint32_t* msg_size);
 void dispatcher_send_msg(void* instance, uint32_t id);
 void dispatcher_destroy(void* instance);
 
-
 interface_t DISPATCHER_FUNCTIONS ={
-    .get_supported_msg = dispatcher_get_supported_message,
+    .get_supported_msg = NULL,
     .send_msg = dispatcher_send_msg,
     .destroy = dispatcher_destroy,
 };
 
-dispatcher_t* dispatcher_init() {
+dispatcher_t* create_dispatcher() {
     dispatcher_t* dispatcher_instance = malloc(sizeof(dispatcher_t));
     if (!dispatcher_instance) {
         printf("Memory couldn't get allocated for dispatcher\n");
@@ -116,24 +106,30 @@ dispatcher_t* dispatcher_init() {
     return dispatcher_instance;
 }
 
-
 void dispatcher_send_msg(void* instance, uint32_t id){
     dispatcher_t* dispatcher_instance = instance;
 
-    if (id >=10 && id<=20){
+    // Handle message ID 0 as BREAK - send to both processes to gracefully shut them down
+    if (id == 0) {
+        printf("DISPATCHER: Received BREAK signal (0), forwarding to all processes...\n");
+        dispatcher_instance->simple_functions->send_msg(dispatcher_instance->simple_instance, id);
+        dispatcher_instance->advanced_functions->send_msg(dispatcher_instance->advanced_instance, id);
+        return;
+    }
+
+    if (id >= 10 && id <= 20){
         dispatcher_instance->simple_functions->send_msg(dispatcher_instance->simple_instance, id);
     }
-    else if (id >=30 && id <=40){
+    else if (id >= 30 && id <= 40){
         dispatcher_instance->advanced_functions->send_msg(dispatcher_instance->advanced_instance, id);
     }
-    else if ( id>=50 && id<=60){
+    else if (id >= 50 && id <= 60){
         dispatcher_instance->simple_functions->send_msg(dispatcher_instance->simple_instance, id);
         dispatcher_instance->advanced_functions->send_msg(dispatcher_instance->advanced_instance, id);
     }
     else{
         printf("Message IS NOT SUPPORTED !\n");
     }
-
 }
 
 void dispatcher_destroy(void* instance){
@@ -144,7 +140,6 @@ void dispatcher_destroy(void* instance){
 
     free(dispatcher_instance);
 }
-
 
 interface_t* get_dispatcher_functions(dispatcher_t* handle){
     return handle->dispatcher_functions;
