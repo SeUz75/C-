@@ -136,6 +136,19 @@ void* worker_loop(void* arg){
             has_message = 1;
         }
         
+        // Check for BREAK signal (message 0) - initiate shutdown
+        if (has_message && msg_id == 0) {
+            printf("BASE_THREAD: Received BREAK signal (0), initiating shutdown...\n");
+            base_obj->running = 0;  // Set shutdown flag
+            pthread_mutex_unlock(&base_obj->lock);
+            
+            // Still call the callback to let the owner know about the shutdown
+            if (base_obj->cb) {
+                base_obj->cb(base_obj->owner, msg_id);
+            }
+            break;  // Exit the loop
+        }
+        
         // Keep references to callback and owner while still holding lock
         process_fn_t callback = base_obj->cb;
         void* owner = base_obj->owner;

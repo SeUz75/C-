@@ -4,6 +4,13 @@
 
 #include "dispatcher_lib.h"
 
+#if defined(__ANDOROID__) || defined(ANDROID)
+    #include <android/log.h>
+    #define MY_PRINTF(fmt, ...) __andoird_log_print(ANDROID_LOG_INFO, "Mytag", fmtm ##__VA_ARGS__)
+#else
+    #define MY_PRINTF(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#endif
+
 void print_list(node_t* head){
     node_t* current = head->next;
 
@@ -59,9 +66,11 @@ int main() {
     dispatcher_functions->send_msg(dispatcher_instance, 5);
     dispatcher_functions->send_msg(dispatcher_instance, 15);
     dispatcher_functions->send_msg(dispatcher_instance, 25);
+    dispatcher_functions->send_msg(dispatcher_instance, 0);
     dispatcher_functions->send_msg(dispatcher_instance, 35);
     dispatcher_functions->send_msg(dispatcher_instance, 55);
 
+    MY_PRINTF("ur so cool lol\n");
     dispatcher_functions->destroy(dispatcher_instance);
 
     dlclose(dispatcher_handle);

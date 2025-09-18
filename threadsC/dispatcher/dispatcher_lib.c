@@ -112,8 +112,8 @@ void dispatcher_send_msg(void* instance, uint32_t id){
     // Handle message ID 0 as BREAK - send to both processes to gracefully shut them down
     if (id == 0) {
         printf("DISPATCHER: Received BREAK signal (0), forwarding to all processes...\n");
-        dispatcher_instance->simple_functions->send_msg(dispatcher_instance->simple_instance, id);
-        dispatcher_instance->advanced_functions->send_msg(dispatcher_instance->advanced_instance, id);
+        //dispatcher_instance->simple_functions->send_msg(dispatcher_instance->simple_instance, id);
+        //dispatcher_instance->advanced_functions->send_msg(dispatcher_instance->advanced_instance, id);
         return;
     }
 
