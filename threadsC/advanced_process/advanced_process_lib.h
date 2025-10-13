@@ -6,10 +6,8 @@
 
 #define ADVANCED_MESSAGES_SIZE 11
 
-typedef struct advanced_process advanced_process_t;
+void* create_advanced_process();
 
-advanced_process_t* create_advanced_process();
-
-interface_t* advanced_process_get_interface(advanced_process_t* handle);
+interface_t* advanced_process_get_interface(void* handle);
 
 #endif

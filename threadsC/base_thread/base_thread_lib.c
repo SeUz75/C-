@@ -17,7 +17,7 @@ typedef struct base_thread_s {
     node_t* queue;
     process_fn_t cb;
     void* owner;
-};
+}base_thread_t;
 
 void* bt_init_void();  
 void bt_get_supported_msg(void* handle, uint32_t** msg, size_t* n);

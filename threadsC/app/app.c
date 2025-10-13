@@ -21,30 +21,20 @@ void print_list(node_t* head){
 }
 
 
-int main() {
-    // base_thread_t* thread = base_thread_create(NULL, test_callback);
-    // interface_t* base_functions = base_get_interface_functions(thread);
-    
-    // // Use the interface
-    
-    
-    // sleep(1);  // Let it process
-    
-    // base_functions->send_msg(thread,10);
-    // base_functions->send_msg(thread,20);
-
-    // base_functions->destroy(thread);
-
-    void* dispatcher_handle = dlopen("/home/seuz75/C/thread2/install/lib/libdispatcher.so", RTLD_LAZY);
+int main(int argc, char* argv[]) {
+    void* dispatcher_handle = dlopen("/home/seuz75/C/assignemt_thread_c/install/lib/libdispatcher.so", RTLD_LAZY);
 
     if (!dispatcher_handle) {
         printf("Error loading library: %s\n", dlerror());
         return 1;
     }
 
-     // Get function pointers
-    dispatcher_t* (*create_dispatcher)() = dlsym(dispatcher_handle, "create_dispatcher");
-    interface_t* (*get_interface)() = dlsym(dispatcher_handle, "get_dispatcher_functions");
+    // Get function pointers
+    void* (*create_dispatcher)(); 
+    create_dispatcher = dlsym(dispatcher_handle, "create_dispatcher");
+
+    interface_t* (*get_interface)(void*); 
+    get_interface = dlsym(dispatcher_handle, "get_dispatcher_functions");
     printf("get_dispatcher function done \n");
     
     if (!create_dispatcher || !get_interface) {
@@ -53,24 +43,41 @@ int main() {
         return 1;
     }
     
-    dispatcher_t* dispatcher_instance = create_dispatcher();
+    void* dispatcher_instance = create_dispatcher();
+
     if (!dispatcher_instance) {
         printf("Failed to create simple process\n");
         dlclose(dispatcher_handle);
         return 1;
     }
     
-    
     interface_t* dispatcher_functions = get_interface(dispatcher_instance);
-    
-    dispatcher_functions->send_msg(dispatcher_instance, 5);
-    dispatcher_functions->send_msg(dispatcher_instance, 15);
-    dispatcher_functions->send_msg(dispatcher_instance, 25);
-    dispatcher_functions->send_msg(dispatcher_instance, 0);
-    dispatcher_functions->send_msg(dispatcher_instance, 35);
-    dispatcher_functions->send_msg(dispatcher_instance, 55);
 
-    MY_PRINTF("ur so cool lol\n");
+    uint32_t** msg_arrays;
+    size_t* n_arrays;
+    dispatcher_functions->get_supported_msg(dispatcher_instance, &msg_arrays, n_arrays);
+
+    // Iterate through both sets
+    printf("Supported messages are : \n");
+    for (size_t i = 0; i < n_arrays; ++i) {
+        printf("Message -> %ld\n", *msg_arrays[i]);
+    }
+
+    
+    char* possible_char = NULL;
+    uint32_t id = 0;
+
+    for ( uint32_t i = 1; i < argc; i++){
+        id = strtoul(argv[i], &possible_char, 10);
+
+        dispatcher_functions->send_msg(dispatcher_instance, id);
+        if ( id == 0 || *possible_char !=  '\0'){
+            printf("Failure \n");
+            break;
+        }
+    }
+
+    printf("ur so cool lol\n");
     dispatcher_functions->destroy(dispatcher_instance);
 
     dlclose(dispatcher_handle);

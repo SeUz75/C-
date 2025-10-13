@@ -3,12 +3,8 @@
 
 #include "base_thread_lib.h"
 
-typedef struct dispatcher dispatcher_t;
+void* create_dispatcher();
 
-
-dispatcher_t* create_dispatcher();
-
-interface_t* get_dispatcher_functions(dispatcher_t* handle);
-
+interface_t* get_dispatcher_functions(void* handle);
 
 #endif //DISPATCHER_H

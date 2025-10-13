@@ -24,4 +24,3 @@ install ( TARGETS
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
 )
-

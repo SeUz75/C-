@@ -8,8 +8,6 @@
 
 #include "data_structure.h"
 
-typedef struct base_thread_s base_thread_t;
-
 // Process function typedef
 typedef void (*process_fn_t)(void* instance, uint32_t id);
 
