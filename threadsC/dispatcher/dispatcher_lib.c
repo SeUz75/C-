@@ -111,11 +111,22 @@ void* create_dispatcher() {
                                             &dispatcher_instance->msgs_advanced,
                                             &dispatcher_instance->msg_size_advanced);
 
+    printf("Messages pass ADVANED are :");
+    printf("Message size of advanced is : %d \n", dispatcher_instance->msg_size_advanced);
+    for (size_t i = 0; i < dispatcher_instance->msg_size_advanced; i++) { 
+        printf("ADVANCED : %ld \n", dispatcher_instance->msgs_advanced[i]);
+    }                                       
+
     dispatcher_instance->simple_functions->get_supported_msg(
                                             dispatcher_instance->simple_instance,
                                             &dispatcher_instance->msgs_simple,
                                             &dispatcher_instance->msg_size_simple);
-
+    
+    printf("Messages pass SIMPLE are :");
+    printf("Message size of simple is : %d \n", dispatcher_instance->msg_size_simple);
+    for (size_t i = 0; i < dispatcher_instance->msg_size_simple; i++) { 
+        printf("SIMPLE : %ld \n", dispatcher_instance->msgs_simple[i]);
+    }    
 
     dispatcher_instance->dispatcher_functions.init = NULL;
     dispatcher_instance->dispatcher_functions.send_msg = dispatcher_send_msg;

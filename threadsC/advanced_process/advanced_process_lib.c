@@ -65,15 +65,15 @@ void advanced_send_msg(void* instance, uint32_t id){
 void advanced_get_support_messages(void* instance, uint32_t** msg,
                                   size_t* msg_size) {
    advanced_process_t* advanced_instance = (advanced_process_t*)instance;
-
-//    printf("Advanced_process messages %ld \n", advanced_instance->supported_n);
-//    printf("Messsages are :\n");
-//    for (size_t i = 0; i < advanced_instance->supported_n; i++) {
-//        printf("Message is : %d\n", advanced_instance->supported_messages[i]);
-//    }
-//     printf("-------------------------- \n");
-   *msg = (uint32_t*) &SUPPORTED_MESSAGES;
+    
+   *msg = advanced_instance->supported_messages;  // Just point to static array
    *msg_size = advanced_instance->supported_n;
+
+   // printf("Messages pass ADVANED are :");
+   // printf("Message size of advanced is : %d \n", *msg_size);
+   // for (size_t i = 0; i < advanced_instance->supported_n; i++) { 
+   //    printf("ADVANCED : %ld \n", (*msg)[i]);
+   // }
 }
 
 void advanced_destroy(void* instance) {
