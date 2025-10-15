@@ -164,18 +164,36 @@ void* create_dispatcher() {
 void dispatcher_send_msg(void* instance, uint32_t id){
     dispatcher_t* dispatcher_instance = instance;
 
-    if (id >= 10 && id <= 20){
+    // printf("%d   and   %d \n", dispatcher_instance->msgs_simple[0], dispatcher_instance->msgs_simple[ (dispatcher_instance->msg_size_simple-1) ]);
+    // printf("%d   and   %d \n", dispatcher_instance->msgs_simple[0], dispatcher_instance->msgs_simple[ ((dispatcher_instance->msg_size_simple/2) -1) ]);
+    // printf("%d   and   %d \n", dispatcher_instance->msgs_advanced[0], dispatcher_instance->msgs_advanced[dispatcher_instance->msg_size_advanced/2]);
+    printf("Advanced 50 to 60 \n");
+    printf("%d \n", dispatcher_instance->msgs_advanced[(dispatcher_instance->msg_size_advanced / 2)]);
+    printf("%d \n", dispatcher_instance->msgs_advanced[dispatcher_instance->msg_size_advanced - 1]);
+    printf("-------------------\n");
+
+    printf("simple 50 to 60 \n");
+    printf("%d \n", dispatcher_instance->msgs_simple[(dispatcher_instance->msg_size_simple/2)]);
+    printf("%d \n", dispatcher_instance->msgs_simple[dispatcher_instance->msg_size_simple - 1]);
+    printf("-------------------\n");
+
+    if (id >= dispatcher_instance->msgs_simple[0] && id <= dispatcher_instance->msgs_simple[((dispatcher_instance->msg_size_simple/2) - 1)] ){
         dispatcher_instance->simple_functions->send_msg(dispatcher_instance->simple_instance, id);
     }
-    else if (id >= 30 && id <= 40){
+    else if (id >= dispatcher_instance->msgs_advanced[0] && id <= dispatcher_instance->msgs_advanced[((dispatcher_instance->msg_size_advanced/2) -1)]){
         dispatcher_instance->advanced_functions->send_msg(dispatcher_instance->advanced_instance, id);
     }
-    else if (id >= 50 && id <= 60){
+    else if (
+             id >= dispatcher_instance->msgs_advanced[(dispatcher_instance->msg_size_advanced / 2)] && 
+             id <= dispatcher_instance->msgs_advanced[dispatcher_instance->msg_size_advanced - 1]   &&
+             id >= dispatcher_instance->msgs_simple[(dispatcher_instance->msg_size_simple/2)]       &&
+             id <= dispatcher_instance->msgs_simple[dispatcher_instance->msg_size_simple - 1] )      {
+
+        printf("id : %d\n", id);
         dispatcher_instance->simple_functions->send_msg(dispatcher_instance->simple_instance, id);
         dispatcher_instance->advanced_functions->send_msg(dispatcher_instance->advanced_instance, id);
     }
     else{
-        dispatcher_instance->simple_functions->send_msg(dispatcher_instance->simple_instance, id);
         printf("Message IS NOT SUPPORTED !\n");
     }
 }

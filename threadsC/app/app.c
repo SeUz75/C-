@@ -58,10 +58,10 @@ int main(int argc, char* argv[]) {
     dispatcher_functions->get_supported_msg(dispatcher_instance, &msg_arrays, &n_arrays);
 
     // Iterate through both sets
-    printf("Supported messages are : \n");
-    for (size_t i = 0; i < n_arrays; ++i) {
-        printf("Message -> %d\n", msg_arrays[i]);
-    }
+    // printf("Supported messages are : \n");
+    // for (size_t i = 0; i < n_arrays; ++i) {
+    //     printf("Message -> %d\n", msg_arrays[i]);
+    // }
 
     
     char* possible_char = NULL;
