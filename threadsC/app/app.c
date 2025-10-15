@@ -53,15 +53,15 @@ int main(int argc, char* argv[]) {
     
     interface_t* dispatcher_functions = get_interface(dispatcher_instance);
 
-    // uint32_t* msg_arrays;
-    // size_t n_arrays;
-    // dispatcher_functions->get_supported_msg(dispatcher_instance, &msg_arrays, n_arrays);
+    uint32_t* msg_arrays;
+    size_t n_arrays;
+    dispatcher_functions->get_supported_msg(dispatcher_instance, &msg_arrays, &n_arrays);
 
     // Iterate through both sets
-    // printf("Supported messages are : \n");
-    // for (size_t i = 0; i < n_arrays; ++i) {
-    //     printf("Message -> %d\n", *msg_arrays[i]);
-    // }
+    printf("Supported messages are : \n");
+    for (size_t i = 0; i < n_arrays; ++i) {
+        printf("Message -> %d\n", msg_arrays[i]);
+    }
 
     
     char* possible_char = NULL;

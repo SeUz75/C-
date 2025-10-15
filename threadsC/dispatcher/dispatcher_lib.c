@@ -18,6 +18,8 @@ typedef struct dispatcher {
     uint32_t* msgs_advanced;
     uint32_t msg_size_advanced;
 
+    uint32_t* merged;
+
     interface_t dispatcher_functions;
 }dispatcher_t;
 
@@ -28,11 +30,35 @@ void dispatcher_destroy(void* instance);
 
 void dispatcher_get_supported_message(void* instance, uint32_t** msgs, uint32_t* msg_size) {
     dispatcher_t* dispatcher_instance = instance;
-    static uint32_t* all_msgs[2];
-    all_msgs[1] = dispatcher_instance->msgs_advanced;
-    all_msgs[2] = dispatcher_instance->msgs_simple;
-    *msgs = all_msgs;
-    *msg_size = dispatcher_instance->msg_size_advanced + dispatcher_instance->msg_size_simple; 
+    
+    uint32_t total_size = dispatcher_instance->msg_size_advanced + dispatcher_instance->msg_size_simple;
+    
+    // Allocate memory for merged array
+    dispatcher_instance->merged = calloc(total_size, sizeof(uint32_t));
+    if (!dispatcher_instance->merged) {
+        printf("Failed to allocate memory for merged messages\n");
+        *msgs = NULL;
+        *msg_size = 0;
+        return;
+    }
+    
+    // Copy advanced messages
+    for (uint32_t i = 0; i < dispatcher_instance->msg_size_advanced; i++) {
+        dispatcher_instance->merged[i] = dispatcher_instance->msgs_advanced[i];
+    }
+    
+    // Copy simple messages
+    for (uint32_t i = 0; i < dispatcher_instance->msg_size_simple; i++) {
+        dispatcher_instance->merged[dispatcher_instance->msg_size_advanced + i] = dispatcher_instance->msgs_simple[i];
+    }
+    
+    *msgs = dispatcher_instance->merged;
+    *msg_size = total_size;
+    
+    // printf("Messages are  : \n");
+    // for (uint32_t i = 0; i < total_size; i++) { 
+    //     printf("[%d] -> %d \n", i, dispatcher_instance->merged[i]);
+    // }
 }
 
 
@@ -111,22 +137,22 @@ void* create_dispatcher() {
                                             &dispatcher_instance->msgs_advanced,
                                             &dispatcher_instance->msg_size_advanced);
 
-    printf("Messages pass ADVANED are :");
-    printf("Message size of advanced is : %d \n", dispatcher_instance->msg_size_advanced);
-    for (size_t i = 0; i < dispatcher_instance->msg_size_advanced; i++) { 
-        printf("ADVANCED : %ld \n", dispatcher_instance->msgs_advanced[i]);
-    }                                       
+    // printf("Messages pass ADVANED are :");
+    // printf("Message size of advanced is : %d \n", dispatcher_instance->msg_size_advanced);
+    // for (size_t i = 0; i < dispatcher_instance->msg_size_advanced; i++) { 
+    //     printf("ADVANCED : %ld \n", dispatcher_instance->msgs_advanced[i]);
+    // }                                       
 
     dispatcher_instance->simple_functions->get_supported_msg(
                                             dispatcher_instance->simple_instance,
                                             &dispatcher_instance->msgs_simple,
                                             &dispatcher_instance->msg_size_simple);
     
-    printf("Messages pass SIMPLE are :");
-    printf("Message size of simple is : %d \n", dispatcher_instance->msg_size_simple);
-    for (size_t i = 0; i < dispatcher_instance->msg_size_simple; i++) { 
-        printf("SIMPLE : %ld \n", dispatcher_instance->msgs_simple[i]);
-    }    
+    // printf("Messages pass SIMPLE are :");
+    // printf("Message size of simple is : %d \n", dispatcher_instance->msg_size_simple);
+    // for (size_t i = 0; i < dispatcher_instance->msg_size_simple; i++) { 
+    //     printf("SIMPLE : %ld \n", dispatcher_instance->msgs_simple[i]);
+    // }    
 
     dispatcher_instance->dispatcher_functions.init = NULL;
     dispatcher_instance->dispatcher_functions.send_msg = dispatcher_send_msg;
@@ -156,7 +182,7 @@ void dispatcher_send_msg(void* instance, uint32_t id){
 
 void dispatcher_destroy(void* instance){
     dispatcher_t* dispatcher_instance = instance;
-
+    free(dispatcher_instance->merged);
     dispatcher_instance->simple_functions->destroy(dispatcher_instance->simple_instance);
     dispatcher_instance->advanced_functions->destroy(dispatcher_instance->advanced_instance);
 
