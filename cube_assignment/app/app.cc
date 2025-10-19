@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <vector>
 #include <unistd.h>
 
 #include "utilities.h"
@@ -147,15 +149,37 @@ int main (int argc, char* argv[]) {
             return -1;
     }
 
-    std::cout << " y = " << static_cast<int>(y) <<std::endl;
-    std::cout << " u = " << static_cast<int>(u) <<std::endl;
-    std::cout << " v = " << static_cast<int>(v) <<std::endl;
-    std::cout << " Y = " << static_cast<int>(Y) <<std::endl;
-    std::cout << " U = " << static_cast<int>(U) <<std::endl;
-    std::cout << " V = " << static_cast<int>(V) <<std::endl;
-    std::cout << " a = " << static_cast<int>(a) <<std::endl;
-    std::cout << " b = " << static_cast<int>(b) <<std::endl;
-    std::cout << " c = " << static_cast<int>(c) <<std::endl;
+    // std::cout << " y = " << static_cast<int>(y) <<std::endl;
+    // std::cout << " u = " << static_cast<int>(u) <<std::endl;
+    // std::cout << " v = " << static_cast<int>(v) <<std::endl;
+    // std::cout << " Y = " << static_cast<int>(Y) <<std::endl;
+    // std::cout << " U = " << static_cast<int>(U) <<std::endl;
+    // std::cout << " V = " << static_cast<int>(V) <<std::endl;
+    // std::cout << " a = " << static_cast<int>(a) <<std::endl;
+    // std::cout << " b = " << static_cast<int>(b) <<std::endl;
+    // std::cout << " c = " << static_cast<int>(c) <<std::endl;
+    std::ofstream video_buffer(output_file, std::ios::out | std::ios::binary);
 
+    video_buffer << "YUVMPEG2 W " << (int)w << " H" << (int)h << " F" <<f <<"Ip A0:0 C420\nFRAME\n";
+
+    std::vector<uint8_t> Y_value(w * h);
+    std::vector<uint8_t> U_value(w/2 * h/2);
+    std::vector<uint8_t> V_value(w/2 * h/2);
+
+    for ( int i = 0; i < f; i++) {
+        video_buffer << "FRAME\n";
+
+        for ( int y = 0; y < h; y++) {
+            for ( int x = 0; x < w; x++) {
+                Y_value[y*w + x] = (x + f*2) % 256;
+            }
+            std::fill(U_value.begin(), U_value.end(), 128);
+            std::fill(V_value.begin(), V_value.end(), 128);
+
+            video_buffer.write((char*)Y_value.data(), Y_value.size());
+            video_buffer.write((char*)U_value.data(), U_value.size());
+            video_buffer.write((char*)V_value.data(), V_value.size());
+        }
+    }
     return 0;
 }

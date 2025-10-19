@@ -43,5 +43,5 @@ test_app () {
 
     cmake --install build -v
 
-    ./install/bin/executable -o 22 -w 1920 -h 1080 -f 22 -s 22 -S 22 -y 22 -u 22 -v 22 -Y 22 -U 22 -V 22 -a 22 -b 22 -c 22
+    ./install/bin/executable -o cube_video.y4m -w 1920 -h 1080 -f 22 -s 22 -S 22 -y 22 -u 22 -v 22 -Y 22 -U 22 -V 22 -a 22 -b 22 -c 22
 }
