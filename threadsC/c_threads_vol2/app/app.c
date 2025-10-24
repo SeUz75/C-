@@ -17,10 +17,6 @@ int main (int argc, char* argv[]) {
     
     interface_t* dispatcher_functions = get_dispatcher_functions(dispatcher_instance);
     dispatcher_functions->get_supported_msg(dispatcher_instance, &supported_messages, &count_msgs);
-    // printf("Count %ld \n", count_msgs);
-    // for (int i = 0; i < (int)count_msgs; i++) {
-    //     printf("Messages got %d \n", supported_messages[i]);
-    // }
 
     int found_flag = 0;
     char* possible_char = NULL;
