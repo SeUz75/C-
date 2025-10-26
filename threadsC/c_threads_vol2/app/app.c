@@ -21,7 +21,6 @@ int main (int argc, char* argv[]) {
     int found_flag = 0;
     char* possible_char = NULL;
     uint32_t id = 0;
-    possible_char = '\0';
 
     for (size_t i = 1; i < (size_t)argc; i++) {
         id = strtoul(argv[i], &possible_char, 0);

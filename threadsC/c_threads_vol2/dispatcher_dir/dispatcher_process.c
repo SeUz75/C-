@@ -49,11 +49,6 @@ void dispatcher_send_message(void* instance, uint32_t id) {
     int found_in_simple = 0;
     int found_in_advanced = 0;
 
-    // printf("Simple supported messages are : \n");                                  
-    // for (size_t i = 0; i < dispatcher_instance->simple_count_msgs; i++) { 
-    //     printf("Simple -> %d \n", dispatcher_instance->simple_msgs[i]);
-    // }
-
     for (size_t i = 0; i < dispatcher_instance->simple_count_msgs; i++) {
         if (id == dispatcher_instance->simple_msgs[i]) {
             found_in_simple = FOUND_IN_SIMPLE;
@@ -98,7 +93,6 @@ void* create_dispatcher(){
         return NULL;
     }
 
-    // Simple handle
     void* simple_handle = dlopen("/home/tarnished/work/C-/threadsC/c_threads_vol2/install/lib/libc_simple.so", RTLD_LAZY);
     if (simple_handle == NULL) {
         printf("Could not find the library, failed dlopen simple\n");
@@ -106,7 +100,6 @@ void* create_dispatcher(){
         return NULL;
     }
 
-    // Creating simple instance and getting its functions
     void* (*create_simple_process)() =(void* (*)()) dlsym(simple_handle, "create_simple_process");
     interface_t* (*get_simple_functions)(void*) =(interface_t* (*)(void*)) dlsym(simple_handle, "get_simple_functions");
     if (!create_simple_process || !get_simple_functions) {
@@ -116,12 +109,10 @@ void* create_dispatcher(){
         return NULL;
     }
 
-    // Using the function pointers to get simple attributes
     dispatcher_instance->simple_instance = create_simple_process();
     dispatcher_instance->simple_functions = get_simple_functions(dispatcher_instance->simple_instance);
 
 
-    // Advanced handle
     void* advanced_handle = dlopen("/home/tarnished/work/C-/threadsC/c_threads_vol2/install/lib/libc_advanced.so", RTLD_LAZY);
     if (advanced_handle == NULL) {
         printf("Could not find the library, failed dlopen advanced\n");
@@ -129,7 +120,6 @@ void* create_dispatcher(){
         return NULL;
     }
 
-    // Creating advanced instance and getting its functions
     void* (*create_advanced_process)() =(void* (*)()) dlsym(advanced_handle, "create_advanced_process");
     interface_t* (*get_advanced_functions)(void*) =(interface_t* (*)(void*)) dlsym(advanced_handle, "get_advanced_functions");
     if (!create_advanced_process || !get_advanced_functions) {
@@ -139,8 +129,6 @@ void* create_dispatcher(){
         return NULL;
     }
 
-
-    // Using the function pointers to get simple attributes
     dispatcher_instance->advanced_instance = create_advanced_process();
     dispatcher_instance->advanced_functions = get_advanced_functions(dispatcher_instance->advanced_instance);
 
@@ -153,15 +141,6 @@ void* create_dispatcher(){
                                             dispatcher_instance->advanced_instance, 
                                             &dispatcher_instance->advanced_msgs, 
                                             &dispatcher_instance->advanced_count_msgs);
-    // printf("Simple supported messages are : \n");                                  
-    // for (size_t i = 0; i < dispatcher_instance->simple_count_msgs; i++) { 
-    //     printf("Simple -> %d \n", dispatcher_instance->simple_msgs[i]);
-    // }
-
-    // printf("Advanced supported messages are : \n");
-    // for (size_t i = 0; i < dispatcher_instance->advanced_count_msgs; i++) { 
-    //     printf("Advanced -> %d \n", dispatcher_instance->advanced_msgs[i]);
-    // }
 
     dispatcher_instance->dispatcher_count_msgs = dispatcher_instance->simple_count_msgs + dispatcher_instance->advanced_count_msgs;
 
