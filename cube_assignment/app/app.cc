@@ -154,18 +154,39 @@ int main (int argc, char* argv[]) {
     // Minimal Y4M header must include
     // YUV4MPEG2 W<width> H<height> F<fps_num>:<fps_den> Ip A0:0 C<chroma>
     std::ofstream video_buffer(output_file, std::ios::out | std::ios::binary);
-    video_buffer << "YUV4MPEG2 W" << w << " H" << h << " F" << f << ":30 Ip A0:0 C420jpeg\n";
+    video_buffer << "YUV4MPEG2 W" << w << " H" << h << " F" << f << ":1 Ip A0:0 C420jpeg\n";
 
-    std::vector<uint8_t> y_background(w*h, y);
-    std::vector<uint8_t> u_background((w*h)/4, u);
-    std::vector<uint8_t> v_background((w*h)/4, v);
+    // Create buffer
+    std::vector<uint8_t> buffer(w * h + 2 * (w * h / 4), 0);
 
-    for (int i = 0; i < f; i++) {
-        video_buffer << "FRAME\n";
+    // Get plane pointers
+    uint8_t* Yplane = buffer.data();
+    uint8_t* Uplane = Yplane + (w * h);
+    uint8_t* Vplane = Uplane + (w * h / 4);
 
-        video_buffer.write(reinterpret_cast<const char*>(y_background.data()), w*h);
-        video_buffer.write(reinterpret_cast<const char*>(u_background.data()), (w*h)/4);
-        video_buffer.write(reinterpret_cast<const char*>(v_background.data()), (w*h)/4);
+    // Fill background
+    std::fill(Yplane, Yplane + w * h, y);
+    std::fill(Uplane, Uplane + (w * h / 4), u);
+    std::fill(Vplane, Vplane + (w * h / 4), v);
+
+    // Draw square in top-left corner
+    for (int i = 0; i < s; i++) {        // rows
+        for (int j = 0; j < s; j++) {    // cols
+            Yplane[i * w + j] = Y;       // brighter or different luma
+        }
     }
+
+    // Update chroma for the corresponding region (4:2:0 -> half res)
+    for (int i = 0; i < s / 2; i++) {
+        for (int j = 0; j < s / 2; j++) {
+            Uplane[i * (w/2) + j] = U;
+            Vplane[i * (w/2) + j] = V;
+        }
+    }
+
+    video_buffer << "FRAME\n";
+    video_buffer.write(reinterpret_cast<char*>(buffer.data()), buffer.size());
+
+
     return 0;
 }
