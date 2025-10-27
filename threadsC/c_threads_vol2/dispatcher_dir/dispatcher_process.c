@@ -26,7 +26,10 @@ typedef struct dispatcher_process
     uint32_t* advanced_msgs;
     size_t advanced_count_msgs;
 
-}dispatcher_process_t;
+    void* simple_handle;
+    void* advanced_handle;
+
+} dispatcher_process_t;
 
 
 void dispatcher_get_supported_messages(void* instance, uint32_t** msg, size_t* msg_size) { 
@@ -82,6 +85,16 @@ void dispatcher_destroy(void* instance) {
     dispatcher_instance->advanced_functions->destroy(dispatcher_instance->advanced_instance);
 
     free(dispatcher_instance->dispatcher_supported_messages);
+    
+    if (dispatcher_instance->simple_handle) {
+        dlclose(dispatcher_instance->simple_handle);
+        dispatcher_instance->simple_handle = NULL;
+    }
+    if (dispatcher_instance->advanced_handle) {
+        dlclose(dispatcher_instance->advanced_handle);
+        dispatcher_instance->advanced_handle = NULL;
+    }
+
     free(dispatcher_instance);
 }
 
@@ -162,6 +175,9 @@ void* create_dispatcher(){
     dispatcher_instance->dispatcher_functions.get_supported_msg = dispatcher_get_supported_messages;
     dispatcher_instance->dispatcher_functions.send_msg = dispatcher_send_message;
     dispatcher_instance->dispatcher_functions.destroy = dispatcher_destroy;
+
+    dispatcher_instance->simple_handle = simple_handle;
+    dispatcher_instance->advanced_handle = advanced_handle;
 
     return dispatcher_instance;
 }
