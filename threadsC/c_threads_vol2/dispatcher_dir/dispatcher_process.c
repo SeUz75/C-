@@ -14,9 +14,11 @@ typedef struct dispatcher_process
 
     void* simple_instance;
     void* advanced_instance;
+    void* base_instance;
 
     interface_t* simple_functions;
     interface_t* advanced_functions;
+    interface_t* base_functions;
 
     uint32_t* simple_msgs;
     size_t simple_count_msgs;
@@ -27,17 +29,9 @@ typedef struct dispatcher_process
 }dispatcher_process_t;
 
 
-    // void* (* init)(); TICK
-    // void (* get_supported_msg)(void* instance, uint32_t** msg, size_t* msg_size); TICK
-    // void (* send_msg)(void* instance, uint32_t msg); TICK
-    // void (* destroy)(void* instance);
-
 void dispatcher_get_supported_messages(void* instance, uint32_t** msg, size_t* msg_size) { 
     dispatcher_process_t* dispatcher_instance = (dispatcher_process_t*) instance;
-    // printf("Merged messages in dispatcher are : \n");
-    // for (size_t i = 0; i < dispatcher_instance->dispatcher_count_msgs; i++) {
-    //     printf("Dispatcher -> %d \n", dispatcher_instance->dispatcher_supported_messages[i]);
-    // }
+
     *msg = dispatcher_instance->dispatcher_supported_messages;
     *msg_size = dispatcher_instance->dispatcher_count_msgs;
 
@@ -45,6 +39,11 @@ void dispatcher_get_supported_messages(void* instance, uint32_t** msg, size_t* m
 
 
 void dispatcher_send_message(void* instance, uint32_t id) {
+    dispatcher_process_t* dispatcher_instance = (dispatcher_process_t*) instance;
+    dispatcher_instance->base_functions->send_msg(dispatcher_instance->base_instance, id);
+}
+
+void dispatcher_process(void* instance, uint32_t id) {
     dispatcher_process_t* dispatcher_instance = (dispatcher_process_t*) instance;
     int found_in_simple = 0;
     int found_in_advanced = 0;
@@ -78,6 +77,7 @@ void dispatcher_send_message(void* instance, uint32_t id) {
 void dispatcher_destroy(void* instance) {
     dispatcher_process_t* dispatcher_instance = (dispatcher_process_t*) instance;
 
+    dispatcher_instance->base_functions->destroy(dispatcher_instance->base_instance);
     dispatcher_instance->simple_functions->destroy(dispatcher_instance->simple_instance);
     dispatcher_instance->advanced_functions->destroy(dispatcher_instance->advanced_instance);
 
@@ -154,6 +154,9 @@ void* create_dispatcher(){
         dispatcher_instance->dispatcher_supported_messages[dispatcher_instance->simple_count_msgs+i] = dispatcher_instance->advanced_msgs[i];
     }
     
+    dispatcher_instance->base_instance = base_init(dispatcher_instance, dispatcher_process);
+
+    dispatcher_instance->base_functions = base_thread_functions(dispatcher_instance->base_instance);
 
     dispatcher_instance->dispatcher_functions.init = NULL;
     dispatcher_instance->dispatcher_functions.get_supported_msg = dispatcher_get_supported_messages;

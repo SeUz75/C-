@@ -30,10 +30,7 @@ void base_send_msg(void* instance, uint32_t msg) {
 void base_destroy(void* instance){
     base_thread_t* base_instance = (base_thread_t*)instance;
     
-    pthread_mutex_lock(&base_instance->mtx);
-    enqueue_msg(&base_instance->queue, 0);
-    pthread_cond_signal(&base_instance->cv);
-    pthread_mutex_unlock(&base_instance->mtx);
+    base_instance->base_functions.send_msg(base_instance, 0);
 
     pthread_join(base_instance->thread, NULL);
 

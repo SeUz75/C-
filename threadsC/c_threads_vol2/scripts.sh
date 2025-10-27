@@ -60,5 +60,5 @@ test_app () {
     sudo cp /home/tarnished/work/C-/threadsC/c_threads_vol2/install/lib/libc_dispatcher.so /usr/lib
     echo "Library pushed"
     echo ""
-    ./install/bin/c_threads 15 35 55
+    ./install/bin/c_threads 15 55 35
 }
