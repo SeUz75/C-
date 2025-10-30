@@ -154,38 +154,64 @@ int main (int argc, char* argv[]) {
     // Minimal Y4M header must include
     // YUV4MPEG2 W<width> H<height> F<fps_num>:<fps_den> Ip A0:0 C<chroma>
     std::ofstream video_buffer(output_file, std::ios::out | std::ios::binary);
-    video_buffer << "YUV4MPEG2 W" << w << " H" << h << " F" << f << ":1 Ip A0:0 C420jpeg\n";
+    video_buffer << "YUV4MPEG2 W" << w << " H" << h << " F" << f << ":1 C420\n";
+    
+    // // Filling background
+    // std::vector<uint8_t> Y_buffer(w*h, y);
+    // std::vector<uint8_t> U_buffer((w*h)/4, u);
+    // std::vector<uint8_t> V_buffer((w*h)/4, v);
 
-    // Create buffer
-    std::vector<uint8_t> buffer(w * h + 2 * (w * h / 4), 0);
 
-    // Get plane pointers
-    uint8_t* Yplane = buffer.data();
-    uint8_t* Uplane = Yplane + (w * h);
-    uint8_t* Vplane = Uplane + (w * h / 4);
+    // // Generating a cube 
+    // for (size_t y = 0; y < s; y++) {
+    //     for (size_t x = 0; x < s; x++) {
+    //         Y_buffer[(y * w) + x] = Y;
+    //     }
+    // }
 
-    // Fill background
-    std::fill(Yplane, Yplane + w * h, y);
-    std::fill(Uplane, Uplane + (w * h / 4), u);
-    std::fill(Vplane, Vplane + (w * h / 4), v);
 
-    // Draw square in top-left corner
-    for (int i = 0; i < s; i++) {        // rows
-        for (int j = 0; j < s; j++) {    // cols
-            Yplane[i * w + j] = Y;       // brighter or different luma
+    // for (size_t y = 0; y < s/2; y++) {
+    //     for (size_t x = 0; x < s/2; x++) {
+    //         U_buffer[(y * (w/2)) + x] = U;
+    //         V_buffer[(y * (w/2)) + x] = V;
+    //     }
+    // }
+
+    
+    for (size_t pos_y = 0; pos_y + s < h; pos_y+=S) {
+        for (size_t pos_x = 0; pos_x + s < w; pos_x+=S) {
+            std::vector<uint8_t> Y_buffer(w*h, y);
+            std::vector<uint8_t> U_buffer((w*h)/4, u);
+            std::vector<uint8_t> V_buffer((w*h)/4, v);
+
+            for (size_t y = 0; y < s; y++) {
+                for (size_t x = 0; x < s; x++) {
+                    size_t y_index = (pos_y * + y) * w + (pos_x + x);
+                    Y_buffer[y_index] = Y;
+                }
+            }
+
+
+            // Draw corresponding UV area (subsampled)
+            size_t pos_y_uv = pos_y / 2;
+            size_t pos_x_uv = pos_x / 2;
+            size_t s_uv = s / 2;
+
+            for (size_t j = 0; j < s_uv; j++) {
+                for (size_t i = 0; i < s_uv; i++) {
+                    size_t uv_index = (pos_y_uv + j) * (w/2) + (pos_x_uv + i);
+                    U_buffer[uv_index] = U;
+                    V_buffer[uv_index] = V;
+                }
+            }
+
+
+            video_buffer  << "FRAME\n";
+            video_buffer.write(reinterpret_cast<char*>(Y_buffer.data()), Y_buffer.size());
+            video_buffer.write(reinterpret_cast<char*>(U_buffer.data()), U_buffer.size());
+            video_buffer.write(reinterpret_cast<char*>(V_buffer.data()), V_buffer.size());
         }
     }
-
-    // Update chroma for the corresponding region (4:2:0 -> half res)
-    for (int i = 0; i < s / 2; i++) {
-        for (int j = 0; j < s / 2; j++) {
-            Uplane[i * (w/2) + j] = U;
-            Vplane[i * (w/2) + j] = V;
-        }
-    }
-
-    video_buffer << "FRAME\n";
-    video_buffer.write(reinterpret_cast<char*>(buffer.data()), buffer.size());
 
 
     return 0;
