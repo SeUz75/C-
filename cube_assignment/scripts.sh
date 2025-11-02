@@ -34,7 +34,7 @@ create_project () {
 test_app () {
     rm -r build/ install/
     mkdir -p build install/bin install/lib
-    cd build    
+    cd build
     cmake ..
     cd ..
     cmake -S . -B build -DCMAKE_INSTALL_PREFIX=./install
@@ -43,5 +43,5 @@ test_app () {
 
     cmake --install build -v
 
-    ./install/bin/executable -o cube_video.y4m -w 1920 -h 1080 -f 30 -s 12 -S 12 -y 128 -u 128 -v 128 -Y 22 -U 22 -V 22 -a 22 -b 22 -c 22
+    ./install/bin/executable -o cube_video.y4m -w 1920 -h 1080 -f 30 -s 12 -S 12 -y 128 -u 128 -v 128 -Y 150 -U 25 -V 30 -a 22 -b 22 -c 22
 }
