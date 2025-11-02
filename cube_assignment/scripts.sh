@@ -43,5 +43,7 @@ test_app () {
 
     cmake --install build -v
 
-    ./install/bin/executable -o cube_video.y4m -w 1920 -h 1080 -f 30 -s 12 -S 12 -y 128 -u 128 -v 128 -Y 150 -U 25 -V 30 -a 22 -b 22 -c 22
+    ./install/bin/executable -o cube_video.y4m -w 1280 -h 720 -f 30 -s 100 -S 50 -y 50 -u 60 -v 0 -Y 150 -U 25 -V 30 -a 22 -b 22 -c 22
+
+    ffmpeg -i cube_video.y4m output.mp4
 }

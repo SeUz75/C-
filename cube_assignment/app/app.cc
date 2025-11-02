@@ -8,6 +8,9 @@
 #include "cube.h"
 #include "background.h"
 
+#define LEFT -1
+#define RIGHT 1
+
 int main (int argc, char* argv[]) {
     std::cout << "Hello world \n";
 
@@ -185,6 +188,70 @@ int main (int argc, char* argv[]) {
     //           << "size of v -> " << frame_ptr->V_init.size()
     //           << "value of v -> " << static_cast<int>(frame_ptr->U_init[1]) << std::endl;
 
+    std::vector<uint8_t> Y_buffer(frame_ptr->get_height() * frame_ptr->get_width(), frame_ptr->get_Y());
+    std::vector<uint8_t> U_buffer((frame_ptr->get_height() * frame_ptr->get_width()) / 4, frame_ptr->get_U());
+    std::vector<uint8_t> V_buffer((frame_ptr->get_height() * frame_ptr->get_width()) / 4, frame_ptr->get_V());
+
+    video_buffer.write(reinterpret_cast<char*>(Y_buffer.data()), Y_buffer.size());
+    video_buffer.write(reinterpret_cast<char*>(U_buffer.data()), U_buffer.size());
+    video_buffer.write(reinterpret_cast<char*>(V_buffer.data()), V_buffer.size());
+
+    int direction = RIGHT;
+    // Downwards movement
+    // for (size_t height = 0; height + cube_ptr->get_size() < frame_ptr->get_height(); height += cube_ptr->get_step()) {
+    //     for (size_t stride = 0; stride + cube_ptr ->get_size() < frame_ptr->get_width(); stride += cube_ptr->get_step()) {
+    //         std::fill(Y_buffer.begin(), Y_buffer.end(), frame_ptr->get_Y());
+    //         std::fill(U_buffer.begin(), U_buffer.end(), frame_ptr->get_U());
+    //         std::fill(V_buffer.begin(), V_buffer.end(), frame_ptr->get_V());
+    //         if (direction == RIGHT) {
+    //             for (size_t y = 0; y < cube_ptr->get_size(); y++) {
+    //                 for (size_t x = 0; x < cube_ptr->get_size(); x++) {
+    //                     Y_buffer[((height + y) * frame_ptr->get_width() + (stride + x))] = cube_ptr->get_Y();
+    //                 }
+    //             }
+    //         } else if (direction == LEFT) {
+    //             size_t start_x = frame_ptr->get_width() - cube_ptr->get_size() - stride;
+    //             for (size_t y = 0; y < cube_ptr->get_size(); y++) {
+    //                 for (size_t x = 0; x < cube_ptr->get_size(); x++) {
+    //                     Y_buffer[(height + y) * frame_ptr->get_width() + (start_x + x)] = cube_ptr->get_Y();
+    //                 }
+    //             }
+    //         }
+    //         video_buffer << "FRAME\n";
+    //         video_buffer.write(reinterpret_cast<char*>(Y_buffer.data()), Y_buffer.size());
+    //         video_buffer.write(reinterpret_cast<char*>(U_buffer.data()), U_buffer.size());
+    //         video_buffer.write(reinterpret_cast<char*>(V_buffer.data()), V_buffer.size());
+    //     }
+    //     direction *= -1;
+    // }
+
+    // upwards movement
+    for (size_t height = frame_ptr->get_height() - cube_ptr->get_size(); height > 0; height -= cube_ptr->get_step()) {
+        for (size_t stride = 0; stride + cube_ptr->get_size() < frame_ptr->get_width(); stride += cube_ptr->get_step()) {
+            std::fill(Y_buffer.begin(), Y_buffer.end(), frame_ptr->get_Y());
+            std::fill(U_buffer.begin(), U_buffer.end(), frame_ptr->get_U());
+            std::fill(V_buffer.begin(), V_buffer.end(), frame_ptr->get_V());
+            if (direction == RIGHT) {
+                for (size_t y = 0; y < cube_ptr->get_size(); y++) {
+                    for (size_t x = 0; x < cube_ptr->get_size(); x++) {
+                        Y_buffer[((height - y) * frame_ptr->get_width() + (stride + x))] = cube_ptr->get_Y();
+                    }
+                }
+            } else if (direction == LEFT) {
+                size_t start_x = frame_ptr->get_width() - cube_ptr->get_size() - stride;
+                for (size_t y = 0; y < cube_ptr->get_size(); y++) {
+                    for (size_t x = 0; x < cube_ptr->get_size(); x++) {
+                        Y_buffer[(height - y) * frame_ptr->get_width() + (start_x + x)] = cube_ptr->get_Y();
+                    }
+            }
+            }
+            video_buffer << "FRAME\n";
+            video_buffer.write(reinterpret_cast<char*>(Y_buffer.data()), Y_buffer.size());
+            video_buffer.write(reinterpret_cast<char*>(U_buffer.data()), U_buffer.size());
+            video_buffer.write(reinterpret_cast<char*>(V_buffer.data()), V_buffer.size());
+        }
+        direction *= -1;
+    }
 
     return 0;
 }
