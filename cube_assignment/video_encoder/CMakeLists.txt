@@ -2,6 +2,8 @@ add_library(video_encoder_lib STATIC video_encoder.cc)
 
 target_include_directories(video_encoder_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+target_link_libraries(video_encoder_lib cube_lib background_lib)
+
 install(TARGETS
         video_encoder_lib
         ARCHIVE DESTINATION lib)
