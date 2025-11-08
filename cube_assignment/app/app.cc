@@ -172,16 +172,15 @@ int main (int argc, char* argv[]) {
     }
 
     // shared pointers for cube, background
-    auto frame_ptr = std::make_shared<Background>(Background(h, w, f, y, u, v));
-    auto cube_ptr = std::make_shared<Cube>(Cube(s, S, Y, U, V, a, b, c));
-    // Construct encoder (should take shared_ptrs)
+    auto frame_ptr = std::make_shared<Background>(h, w, f, y, u, v);
+    auto cube_ptr = std::make_shared<Cube>(s, S, Y, U, V, a, b, c);
+
     try {
-        auto gen_ptr = std::make_shared<Video_gen>(Video_gen(output_file, cube_ptr, frame_ptr));
+        auto gen_ptr = std::make_shared<Video_gen>(output_file, cube_ptr, frame_ptr);
         // let destructor join threads / flush output when gen_ptr goes out of scope
     } catch (const std::exception& ex) {
         std::cerr << "Exception constructing Video_gen: " << ex.what() << std::endl;
         return -1;
     }
-
     return 0;
 }
