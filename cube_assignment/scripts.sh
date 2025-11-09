@@ -43,13 +43,13 @@ test_app () {
 
     cmake --install build -v
 
-    ./install/bin/executable -o cube_video.y4m -w 1280 -h 720 -f 60 -s 150 -S 50 -y 50 -u 100 -v 100 -Y 100 -U 150 -V 30 -a 22 -b 22 -c 22
+    ./install/bin/executable -o cube_video.y4m -w 1920 -h 1080 -f 60 -s 150 -S 50 -y 50 -u 100 -v 100 -Y 100 -U 150 -V 30 -a 22 -b 22 -c 22
 
-    if [ echo $? -eq 0 ]; then
+    if [ $? -eq 0 ]; then
         echo "Code compiled"
     else
         echo "ERROR the code"
     fi
 
-    #ffmpeg -i cube_video.y4m output.mp4
+    ffmpeg -i cube_video.y4m output.mp4
 }

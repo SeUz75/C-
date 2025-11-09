@@ -177,6 +177,7 @@ int main (int argc, char* argv[]) {
 
     try {
         auto gen_ptr = std::make_shared<Video_gen>(output_file, cube_ptr, frame_ptr);
+        gen_ptr->run();
         // let destructor join threads / flush output when gen_ptr goes out of scope
     } catch (const std::exception& ex) {
         std::cerr << "Exception constructing Video_gen: " << ex.what() << std::endl;

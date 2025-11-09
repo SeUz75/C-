@@ -17,9 +17,13 @@
 class Video_gen {
     public :
         Video_gen(std::string file_name, std::shared_ptr<Cube> cube, std::shared_ptr<Background> frame);
+        void run();
         ~Video_gen();
 
     private :
+        void init();
+        int drawn_frames;
+        int written_frames;
         void draw_frame();
         void write_file();
         std::shared_ptr<Cube> cube_ptr;
