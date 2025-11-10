@@ -86,21 +86,16 @@ void Video_gen::draw_frame() {
             // Waiting till I have available buffers
             {
                 std::unique_lock<std::mutex> lock(draw_mtx);
-                std::cout << "Draw function waiting for available buffer " << std::endl;
                 draw_cv.wait(lock, [&]() { return !draw_queue.empty() || finished; });
 
                 if (finished && draw_queue.empty()) {
                     return;
                 }
-                std::cout << "Draw function pop from queue the buffer ready for drawing" << std::endl;
                 buffer = draw_queue.front();
                 draw_queue.pop();
             }
             fill_background(buffer);
 
-            if (pos_x + cube_ptr->size_ + cube_ptr->step_ >= frame_ptr->stride_) {
-                last_pos_x = pos_x + (cube_ptr->size_ - 1);
-            }
 
             if (direction == RIGHT) {
                 for (int y = 0; y < cube_ptr->size_; y++) {
@@ -125,7 +120,7 @@ void Video_gen::draw_frame() {
                     }
                 }
 
-               // Chroma (U and V planes)
+                // Chroma (U and V planes)
                 for (int y = 0; y < cube_ptr->size_/2; y++) {
                     for (int x = 0; x < cube_ptr->size_/2; x++) {
                         int uv_index = ((pos_y/2 + y) * (frame_ptr->stride_/2)) + (last_pos_x/2 - (x + pos_x/2));
@@ -140,6 +135,9 @@ void Video_gen::draw_frame() {
                 write_queue.push(buffer);
             }
 
+            if (pos_x + cube_ptr->size_ + cube_ptr->step_ >= frame_ptr->stride_) {
+                last_pos_x = pos_x + (cube_ptr->size_ - 1);
+            }
             write_cv.notify_one();
             drawn_frames++;
             // file_ptr << "FRAME\n";
@@ -176,9 +174,6 @@ void Video_gen::draw_frame() {
 
             fill_background(buffer);
 
-            if (pos_x + cube_ptr->size_ + cube_ptr->step_ >= frame_ptr->stride_) {
-                last_pos_x = pos_x + (cube_ptr->size_ - 1);
-            }
 
             if (direction == RIGHT) {
                 for (int y = 0; y < cube_ptr->size_; y++) {
@@ -187,7 +182,7 @@ void Video_gen::draw_frame() {
                     }
                 }
 
-            // Chroma (U and V planes) - CORRECTED
+                // Chroma (U and V planes) - CORRECTED
                 for (int y = 0; y < cube_ptr->size_/2; y++) {
                     for (int x = 0; x < cube_ptr->size_/2; x++) {
                         int uv_index = ((last_pos_y/2 - (pos_y/2 + y)) * (frame_ptr->stride_/2)) + (pos_x/2 + x);
@@ -203,7 +198,7 @@ void Video_gen::draw_frame() {
                     }
                 }
 
-               // Chroma (U and V planes) - CORRECTED
+                // Chroma (U and V planes) - CORRECTED
                 for (int y = 0; y < cube_ptr->size_/2; y++) {
                     for (int x = 0; x < cube_ptr->size_/2; x++) {
                         int uv_index = ((last_pos_y/2 - (pos_y/2 + y)) * (frame_ptr->stride_/2)) + (last_pos_x/2 - (x + pos_x/2));
@@ -218,6 +213,9 @@ void Video_gen::draw_frame() {
                 write_queue.push(buffer);
             }
             drawn_frames++;
+            if (pos_x + cube_ptr->size_ + cube_ptr->step_ >= frame_ptr->stride_) {
+                last_pos_x = pos_x + (cube_ptr->size_ - 1);
+            }
             write_cv.notify_one();
             // file_ptr << "FRAME\n";
             // file_ptr.write(reinterpret_cast<char*>(buffer->data()), buffer->size());
