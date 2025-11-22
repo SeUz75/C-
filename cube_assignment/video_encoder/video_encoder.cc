@@ -9,17 +9,17 @@ Video_gen::Video_gen(std::string file_name, std::shared_ptr<Cube> cube, std::sha
                 return;
             }
             finished = false;
-            cube_ptr = cube;
+            square_ptr = cube;
             frame_ptr = frame;
-            total_size = (frame_ptr->stride_ * frame_ptr->height_) * 3 / 2;
+            total_size = (frame_ptr->width_ * frame_ptr->height_) * 3 / 2;
             buffer_a = std::make_shared<std::vector<uint8_t>>(total_size);
             buffer_c = std::make_shared<std::vector<uint8_t>>(total_size);
             buffer_b = std::make_shared<std::vector<uint8_t>>(total_size);
             // W thread will cond wait for the buffers to be pushed into the queue
-            draw_thread = std::thread(&Video_gen::draw_frame, this);
+            draw_thread = std::thread(&Video_gen::ThreadDraw, this);
 
             // Inside the w thread func we will wake up the g_thread to ge
-            write_thread = std::thread(&Video_gen::write_file, this);
+            write_thread = std::thread(&Video_gen::ThreadWrite, this);
 
             drawn_frames = 0;
             written_frames = 0;
@@ -54,181 +54,161 @@ void Video_gen::run () {
 }
 
 
-void Video_gen::draw_frame() {
+void Video_gen::ThreadDraw() {
+    file_ptr << "YUV4MPEG2 W" << frame_ptr->width_
+                << " H" << frame_ptr->height_
+                << " F" << frame_ptr->fps
+                << ":1 C420\n";
 
-    file_ptr << "YUV4MPEG2 W" << frame_ptr->stride_ << " H" << frame_ptr->height_ << " F" << frame_ptr->frame_rate_ << ":1 C420\n";
+    std::shared_ptr<std::vector<uint8_t>> currentFrame;
 
-    // UPWARD MOVEMENT ---------------------------------------------------
-    int last_pos_x = 0;
-    int last_pos_y = 0;
+    // downwards
+    do {
+        if (square_ptr->pos_x == 0) {
+            // Right direction
+            do {
+                // Waiting till I have available buffers
+                {
+                    std::unique_lock<std::mutex> lock(draw_mtx);
+                    draw_cv.wait(lock, [&]() {
+                        return !draw_queue.empty() || finished;
+                    });
 
-    int y_size = frame_ptr->stride_ * frame_ptr->height_;
-    int u_size = frame_ptr->stride_ * frame_ptr->height_ / 4;
+                    if (finished && draw_queue.empty()) {
+                        return;
+                    }
+                    currentFrame = draw_queue.front();
+                    draw_queue.pop();
+                }
 
-    std::shared_ptr<std::vector<uint8_t>> buffer;
+                frame_ptr->FillBackGround(currentFrame);
+                frame_ptr->DrawSquare(currentFrame, square_ptr);
 
+                // Notifying that a buffer is ready to be written on the file
+                {
+                    std::unique_lock<std::mutex> lock(write_mtx);
+                    write_queue.push(currentFrame);
+                }
 
-      // Lambda function to fill the background of the image
-    auto fill_background = [&] (std::shared_ptr<std::vector<uint8_t>> buffer) {
-        std::fill(buffer->begin(), buffer->begin() + y_size, frame_ptr->Y_init_);
-        std::fill(buffer->begin() + y_size, buffer->begin() + y_size + u_size, frame_ptr->U_init_);
-        std::fill(buffer->begin() + y_size + u_size, buffer->end(), frame_ptr->V_init_);
-    };
+                write_cv.notify_one();
+                square_ptr->pos_x += square_ptr->step_;
 
-    int direction = RIGHT;
+            } while (square_ptr->pos_x + square_ptr->width_ <= frame_ptr->width_);
+        } else if (square_ptr->pos_x + square_ptr->width_ >= frame_ptr->width_) {
+            // Left direction
+            do {
+                // Waiting till I have available buffers
+                {
+                    std::unique_lock<std::mutex> lock(draw_mtx);
+                    draw_cv.wait(lock, [&]() {
+                        return !draw_queue.empty() || finished;
+                    });
 
-    for (int pos_y = 0; pos_y + cube_ptr->size_ < frame_ptr->height_; pos_y += cube_ptr->step_) {
-        if (pos_y + cube_ptr->size_ + cube_ptr->step_ > frame_ptr->height_ ) {
-            last_pos_y = pos_y + (cube_ptr->size_ - 1);
+                    if (finished && draw_queue.empty()) {
+                        return;
+                    }
+                    currentFrame = draw_queue.front();
+                    draw_queue.pop();
+                }
+
+                square_ptr->pos_x -= square_ptr->step_;
+
+                frame_ptr->FillBackGround(currentFrame);
+                frame_ptr->DrawSquare(currentFrame, square_ptr);
+
+                // Notifying that a buffer is ready to be written on the file
+                {
+                    std::unique_lock<std::mutex> lock(write_mtx);
+                    write_queue.push(currentFrame);
+                }
+                write_cv.notify_one();
+
+            } while (square_ptr->pos_x > 0);
         }
 
-        for (int pos_x = 0; pos_x + cube_ptr->size_ < frame_ptr->stride_; pos_x += cube_ptr->step_) {
-            // Waiting till I have available buffers
-            {
-                std::unique_lock<std::mutex> lock(draw_mtx);
-                draw_cv.wait(lock, [&]() { return !draw_queue.empty() || finished; });
+        square_ptr->pos_y += square_ptr->step_;  // step of cube which goes down
+        square_ptr->y_ += square_ptr->Y_inc_;
+        square_ptr->u_ += square_ptr->U_inc_;
+        square_ptr->v_ += square_ptr->V_inc_;
 
-                if (finished && draw_queue.empty()) {
-                    return;
-                }
-                buffer = draw_queue.front();
-                draw_queue.pop();
-            }
-            fill_background(buffer);
+    } while (square_ptr->pos_y + square_ptr->width_ <= frame_ptr->height_);
 
+    square_ptr->y_ += square_ptr->Y_inc_;
+    square_ptr->u_ += square_ptr->U_inc_;
+    square_ptr->v_ += square_ptr->V_inc_;
 
-            if (direction == RIGHT) {
-                for (int y = 0; y < cube_ptr->size_; y++) {
-                    for (int x = 0; x < cube_ptr->size_; x++) {
-                        (*buffer)[((pos_y + y) * frame_ptr->stride_) + (pos_x + x)] = cube_ptr->Y_init_;
+    // Upwards
+    do {
+        square_ptr->pos_y -= square_ptr->step_;
+        if (square_ptr->pos_x == 0) {
+            // Right direction
+            do {
+                // Waiting till I have available buffers
+                {
+                    std::unique_lock<std::mutex> lock(draw_mtx);
+                    draw_cv.wait(lock, [&]() {
+                        return !draw_queue.empty() || finished;
+                    });
+
+                    if (finished && draw_queue.empty()) {
+                        return;
                     }
+                    currentFrame = draw_queue.front();
+                    draw_queue.pop();
                 }
 
-                // Chroma (U and V planes) - YUV420 is subsampled 2x2
-                for (int y = 0; y < cube_ptr->size_/2; y++) {
-                    for (int x = 0; x < cube_ptr->size_/2; x++) {
-                        int uv_index = ((pos_y/2 + y) * (frame_ptr->stride_/2)) + (pos_x/2 + x);
-                        (*buffer)[y_size + uv_index] = cube_ptr->U_init_;                      // U plane
-                        (*buffer)[y_size + u_size + uv_index] = cube_ptr->V_init_;             // V plane
+                frame_ptr->FillBackGround(currentFrame);
+                frame_ptr->DrawSquare(currentFrame, square_ptr);
+
+                // Notifying that a buffer is ready to be written on the file
+                {
+                    std::unique_lock<std::mutex> lock(write_mtx);
+                    write_queue.push(currentFrame);
+                }
+                write_cv.notify_one();
+
+                square_ptr->pos_x += square_ptr->step_;
+            } while (square_ptr->pos_x + square_ptr->width_ <= frame_ptr->width_);
+        } else if (square_ptr->pos_x + square_ptr->width_ >= frame_ptr->width_) {
+            // Left direction
+            do {
+                // Waiting till I have available buffers
+                {
+                    std::unique_lock<std::mutex> lock(draw_mtx);
+                    draw_cv.wait(lock, [&]() {
+                        return !draw_queue.empty() || finished;
+                    });
+
+                    if (finished && draw_queue.empty()) {
+                        return;
                     }
+                    currentFrame = draw_queue.front();
+                    draw_queue.pop();
                 }
 
-            } else if (direction == LEFT) {
-                for (int y = 0; y < cube_ptr->size_; y++) {
-                    for (int x = 0; x < cube_ptr->size_; x++) {
-                        (*buffer)[((pos_y + y) * frame_ptr->stride_) + (last_pos_x - (x + pos_x))] = cube_ptr->Y_init_;
-                    }
-                }
+                square_ptr->pos_x -= square_ptr->step_;
 
-                // Chroma (U and V planes)
-                for (int y = 0; y < cube_ptr->size_/2; y++) {
-                    for (int x = 0; x < cube_ptr->size_/2; x++) {
-                        int uv_index = ((pos_y/2 + y) * (frame_ptr->stride_/2)) + (last_pos_x/2 - (x + pos_x/2));
-                        (*buffer)[y_size + uv_index] = cube_ptr->U_init_;                      // U plane
-                        (*buffer)[y_size + u_size + uv_index] = cube_ptr->V_init_;             // V plane
-                    }
-                }
-            }
-            // Notifying that a buffer is ready to be written on the file
-            {
-                std::unique_lock<std::mutex> lock(write_mtx);
-                write_queue.push(buffer);
-            }
+                frame_ptr->FillBackGround(currentFrame);
+                frame_ptr->DrawSquare(currentFrame, square_ptr);
 
-            if (pos_x + cube_ptr->size_ + cube_ptr->step_ >= frame_ptr->stride_) {
-                last_pos_x = pos_x + (cube_ptr->size_ - 1);
-            }
-            write_cv.notify_one();
-            drawn_frames++;
-            // file_ptr << "FRAME\n";
-            // file_ptr.write(reinterpret_cast<char*>(buffer->data()), buffer->size());
+                // Notifying that a buffer is ready to be written on the file
+                {
+                    std::unique_lock<std::mutex> lock(write_mtx);
+                    write_queue.push(currentFrame);
+                }
+                write_cv.notify_one();
+
+            } while (square_ptr->pos_x > 0);
         }
-        if ( pos_y + cube_ptr->size_ + cube_ptr->step_ > frame_ptr->height_ ) {
-            cube_ptr->Y_init_ = cube_ptr->Y_init_ + (2 * cube_ptr->Y_inc_);
-            cube_ptr->U_init_ = cube_ptr->U_init_ + (2 * cube_ptr->U_inc_);
-            cube_ptr->V_init_ = cube_ptr->V_init_ + (2 * cube_ptr->V_inc_);
-        } else {
-            cube_ptr->Y_init_ = cube_ptr->Y_init_ + cube_ptr->Y_inc_;
-            cube_ptr->U_init_ = cube_ptr->U_init_ + cube_ptr->U_inc_;
-            cube_ptr->V_init_ = cube_ptr->V_init_ + cube_ptr->V_inc_;
-        }
-        direction *= -1;
-    }
+        square_ptr->y_ += square_ptr->Y_inc_;
+        square_ptr->u_ += square_ptr->U_inc_;
+        square_ptr->v_ += square_ptr->V_inc_;
 
-    // Upward movement !
-    for (int pos_y = 0; pos_y + cube_ptr->size_ < frame_ptr->height_; pos_y += cube_ptr->step_) {
-        for (int pos_x = 0; pos_x + cube_ptr->size_ < frame_ptr->stride_; pos_x += cube_ptr->step_) {
-
-            // Waiting till I have available buffers
-            {
-                std::unique_lock<std::mutex> lock(draw_mtx);
-                draw_cv.wait(lock, [&]() { return !draw_queue.empty() || finished; });
-
-                if (finished && draw_queue.empty()) {
-                    return;
-                }
-
-                buffer = draw_queue.front();
-                draw_queue.pop();
-            }
-
-            fill_background(buffer);
-
-
-            if (direction == RIGHT) {
-                for (int y = 0; y < cube_ptr->size_; y++) {
-                    for (int x = 0; x < cube_ptr->size_; x++) {
-                        (*buffer)[((last_pos_y - (pos_y + y)) * frame_ptr->stride_) + (pos_x + x)] = cube_ptr->Y_init_;
-                    }
-                }
-
-                // Chroma (U and V planes) - CORRECTED
-                for (int y = 0; y < cube_ptr->size_/2; y++) {
-                    for (int x = 0; x < cube_ptr->size_/2; x++) {
-                        int uv_index = ((last_pos_y/2 - (pos_y/2 + y)) * (frame_ptr->stride_/2)) + (pos_x/2 + x);
-                        (*buffer)[y_size + uv_index] = cube_ptr->U_init_;
-                        (*buffer)[y_size + u_size + uv_index] = cube_ptr->V_init_;
-                    }
-                }
-
-            } else if (direction == LEFT) {
-                for (int y = 0; y < cube_ptr->size_; y++) {
-                    for (int x = 0; x < cube_ptr->size_; x++) {
-                        (*buffer)[((last_pos_y - (pos_y + y)) * frame_ptr->stride_) + (last_pos_x - (x + pos_x))] = cube_ptr->Y_init_;
-                    }
-                }
-
-                // Chroma (U and V planes) - CORRECTED
-                for (int y = 0; y < cube_ptr->size_/2; y++) {
-                    for (int x = 0; x < cube_ptr->size_/2; x++) {
-                        int uv_index = ((last_pos_y/2 - (pos_y/2 + y)) * (frame_ptr->stride_/2)) + (last_pos_x/2 - (x + pos_x/2));
-                        (*buffer)[y_size + uv_index] = cube_ptr->U_init_;
-                        (*buffer)[y_size + u_size + uv_index] = cube_ptr->V_init_;
-                    }
-                }
-            }
-
-            {
-                std::unique_lock<std::mutex> lock(write_mtx);
-                write_queue.push(buffer);
-            }
-            drawn_frames++;
-            if (pos_x + cube_ptr->size_ + cube_ptr->step_ >= frame_ptr->stride_) {
-                last_pos_x = pos_x + (cube_ptr->size_ - 1);
-            }
-            write_cv.notify_one();
-            // file_ptr << "FRAME\n";
-            // file_ptr.write(reinterpret_cast<char*>(buffer->data()), buffer->size());
-        }
-        cube_ptr->Y_init_ = cube_ptr->Y_init_ + cube_ptr->Y_inc_;
-        cube_ptr->U_init_ = cube_ptr->U_init_ + cube_ptr->U_inc_;
-        cube_ptr->V_init_ = cube_ptr->V_init_ + cube_ptr->V_inc_;
-        direction *= -1;
-    }
+    } while (square_ptr->pos_y > 0);
 }
 
 
-void Video_gen::write_file() {
+void Video_gen::ThreadWrite() {
 
     while (true) {
         std::shared_ptr<std::vector<uint8_t>> buffer;

@@ -24,9 +24,9 @@ class Video_gen {
         void init();
         int drawn_frames;
         int written_frames;
-        void draw_frame();
-        void write_file();
-        std::shared_ptr<Cube> cube_ptr;
+        void ThreadDraw();
+        void ThreadWrite();
+        std::shared_ptr<Cube> square_ptr;
         std::shared_ptr<Background> frame_ptr;
         std::ofstream file_ptr;
         std::queue<std::shared_ptr<std::vector<uint8_t>>> draw_queue;

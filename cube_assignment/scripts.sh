@@ -43,13 +43,13 @@ test_app () {
 
     cmake --install build -v
 
-    ./install/bin/executable -f 30 -w 1920 -h 1080 -s 200 -S 200 -y 50 -u 128 -v 128 -Y 0 -U 0 -V 0 -a 0 -b 128 -c 255 -o output.y4m
+    ./install/bin/executable -f 30 -w 1920 -h 1080 -s 10 -S 10 -y 50 -u 128 -v 128 -Y 0 -U 0 -V 0 -a 0 -b 128 -c 255 -o output.y4m
 
     if [ $? -eq 0 ]; then
         echo "Code compiled"
+        ffmpeg -i output.y4m output.mp4
     else
         echo "ERROR the code"
     fi
 
-    ffmpeg -i output.y4m output.mp4
 }
